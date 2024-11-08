@@ -40,14 +40,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             //velocity to move in directions up, down, left, right
             if(this.direction == 'U'){
                 this.velocityX = 0;
-                this.velocityY = -tileSize/4;
+                this.velocityY = -(tileSize/4);
             }
             else if(this.direction == 'D'){
                 this.velocityX = 0;
                 this.velocityY = tileSize/4;
             }
             else if(this.direction == 'L'){
-                this.velocityX = -tileSize/4;
+                this.velocityX = -(tileSize/4);
                 this.velocityY = 0;
             }
             else if(this.direction == 'R'){
@@ -129,7 +129,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
         //calls actionPerformed to trigger repaint loop every 50ms for game frames
         gameLoop = new Timer(50, this); //20fps (1000ms/50ms)
-        gameLoop.stop();
+        gameLoop.start();
     }
 
     public void loadMap(){
@@ -199,10 +199,17 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         }
     }
 
+    //updates x and y position of pacman
+    public void move(){
+        pacman.x += pacman.velocityX;
+        pacman.y += pacman.velocityY;
+    }
+
     //Triggers the paintComponent to paint the screen again so the screen can display game movement
     @Override
     public void actionPerformed(ActionEvent e){
-        repaint();
+        move(); //updates positions of all objects in the game
+        repaint(); //update frame
     }
 
     @Override
@@ -214,7 +221,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     //Triggers if key is pressed and then let go (method used for arrow key functionality)
     @Override
     public void keyReleased(KeyEvent e){
-        //System.out.println("KeyEvent: " + e.getKeyCode());
+        System.out.println("KeyEvent: " + e.getKeyCode());
 
         //updates velocity of pacman
         if (e.getKeyCode() == KeyEvent.VK_UP){
