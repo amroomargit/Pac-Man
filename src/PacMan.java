@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
 
-public class PacMan extends JPanel{
+public class PacMan extends JPanel implements ActionListener, KeyListener{
     class Block{
         int x;
         int y;
@@ -74,6 +74,8 @@ public class PacMan extends JPanel{
     HashSet<Block> ghosts;
     Block pacman;
 
+    Timer gameLoop;
+
     PacMan(){
         setPreferredSize(new Dimension(boardWidth, boardHeight)); //JPanel size
         setBackground(Color.BLACK); //JPanel colour
@@ -91,6 +93,10 @@ public class PacMan extends JPanel{
         pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
 
         loadMap();
+
+        //calls actionPerformed to trigger repaint loop every 50ms for game frames
+        gameLoop = new Timer(50, this); //20fps (1000ms/50ms)
+        gameLoop.stop();
     }
 
     public void loadMap(){
@@ -137,6 +143,7 @@ public class PacMan extends JPanel{
         }
     }
 
+    //paints the screen so that we can see the images of the game
     public void paintComponent(Graphics g){
         super.paintComponent(g);
         draw(g);
@@ -157,5 +164,23 @@ public class PacMan extends JPanel{
         for(Block food : foods){
             g.fillRect(food.x, food.y, food.width, food.height);
         }
+    }
+
+    //Triggers the paintComponent to paint the screen again so the screen can display game movement
+    @Override
+    public void actionPerformed(ActionEvent e){
+        repaint();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e){}
+
+    @Override
+    public void keyPressed(KeyEvent e){}
+
+    //Triggers if key is pressed and then let go (method used for arrow key functionality)
+    @Override
+    public void keyReleased(KeyEvent e){
+        
     }
 }
