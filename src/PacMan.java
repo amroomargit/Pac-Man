@@ -69,6 +69,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                 this.velocityY = 0;
             }
         }
+
+        void reset(){
+            this.x = this.startX;
+            this.y = this.startY;
+        }
     }
 
     private int rowCount = 21;
@@ -99,9 +104,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             "X    X       X    X",
             "XXXX XXXX XXXX XXXX",
             "OOOX X       X XOOO",
-            "XXXX X XXrXX X XXXX",
-            "O       bpo       O",
-            "XXXX X XXXXX X XXXX",
+            "OOOX X XXrXX X XOOO",
+            "OOOX    bpo    XOOO",
+            "OOOX X XXXXX X XOOO",
             "OOOX X       X XOOO",
             "XXXX X XXXXX X XXXX",
             "X        X        X",
@@ -122,6 +127,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     Timer gameLoop;
     char[] directions = {'U', 'D', 'L', 'R'}; //up, down, left, right for ghosts
     Random random = new Random();
+    int score = 0;
+    int lives = 3;
+    boolean gameOver = false;
 
     PacMan(){
         setPreferredSize(new Dimension(boardWidth, boardHeight)); //JPanel size
@@ -219,6 +227,15 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         for(Block food : foods){
             g.fillRect(food.x, food.y, food.width, food.height);
         }
+
+        //score update
+        g.setFont(new Font("Arial", Font.PLAIN,18));
+        if(gameOver){
+            g.drawString("Game Over: " + String.valueOf(score), tileSize/2,tileSize/2);
+        }
+        else{
+            g.drawString("Lives: x" + String.valueOf(lives) + "    Score: " + String.valueOf(score), tileSize/2,tileSize/2);
+        }
     }
 
     //updates x and y position of pacman
@@ -237,12 +254,47 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         }
 
         //check ghost collisions
-        
+        for(Block ghost : ghosts){
+            if (collision(ghost,pacman)){
+                lives -= 1;
+                resetPositions();
+            }
+            ghost.x += ghost.velocityX;
+            ghost.y += ghost.velocityY;
+            for(Block wall : walls){
+                if(collision(ghost,wall)){
+                    ghost.x -= ghost.velocityX;
+                    ghost.y -= ghost.velocityY;
+                    char newDirection = directions[random.nextInt(4)];
+                    ghost.updateDirection(newDirection);
+                }
+            }
+        }
+
+        //check food collision
+        Block foodEaten = null;
+        for(Block food : foods){
+            if(collision(pacman,food)){
+                foodEaten = food;
+                score += 10;
+            }
+        }
+        foods.remove(foodEaten);
     }
+
+
 
     //detects object collision in game
     public boolean collision(Block a, Block b){
         return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
+    }
+
+    //position reset after pacman loses a life
+    public void resetPositions(){
+        pacman.reset();
+        pacman.velocityX = 0;
+        pacman.velocityY = 0;
+        for()
     }
 
     //Triggers the paintComponent to paint the screen again so the screen can display game movement
