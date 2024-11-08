@@ -30,8 +30,22 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
         //direction update method
         void updateDirection(char direction){
+            char prevDirection = this.direction;
             this.direction = direction;
             updateVelocity();
+
+            /* makes it so that pacman and ghosts can only move in directions they are able to (i.e. not left or right
+            in a horizontal corridor */
+            this.x += this.velocityX;
+            this.y +=  this.velocityY;
+            for(Block wall : walls){
+                if(collision(this,wall)){
+                    this.x -= this.velocityX;
+                    this.y -= this.velocityY;
+                    this.direction = prevDirection;
+                    updateVelocity();
+                }
+            }
         }
 
         //velocity update method
@@ -106,6 +120,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     Block pacman;
 
     Timer gameLoop;
+    char[] directions = {'U', 'D', 'L', 'R'}; //up, down, left, right for ghosts
+    Random random = new Random();
 
     PacMan(){
         setPreferredSize(new Dimension(boardWidth, boardHeight)); //JPanel size
@@ -126,6 +142,12 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         pacmanRightImage = new ImageIcon(getClass().getResource("./pacmanRight.png")).getImage();
 
         loadMap();
+
+        //randomly set ghost direction
+        for(Block ghost : ghosts){
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
 
         //calls actionPerformed to trigger repaint loop every 50ms for game frames
         gameLoop = new Timer(50, this); //20fps (1000ms/50ms)
@@ -203,6 +225,24 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     public void move(){
         pacman.x += pacman.velocityX;
         pacman.y += pacman.velocityY;
+
+        //check wall collisions
+        for(Block wall : walls){
+            if(collision(pacman,wall)){
+                //move pacman in opposite direction if collision with wall detected
+                pacman.x -= pacman.velocityX;
+                pacman.y -= pacman.velocityY;
+                break;
+            }
+        }
+
+        //check ghost collisions
+        
+    }
+
+    //detects object collision in game
+    public boolean collision(Block a, Block b){
+        return a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
     }
 
     //Triggers the paintComponent to paint the screen again so the screen can display game movement
@@ -235,6 +275,20 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         }
         else if (e.getKeyCode() == KeyEvent.VK_RIGHT){
             pacman.updateDirection('R');
+        }
+
+        //Doing this separately because until this point we won't know if pacman can actually move in that direction
+        if(pacman.direction == 'U'){
+            pacman.image = pacmanUpImage;
+        }
+        else if(pacman.direction == 'D'){
+            pacman.image = pacmanDownImage;
+        }
+        else if(pacman.direction == 'L'){
+            pacman.image = pacmanLeftImage;
+        }
+        else if(pacman.direction == 'R'){
+            pacman.image = pacmanRightImage;
         }
     }
 }
