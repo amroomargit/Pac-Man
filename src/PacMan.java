@@ -14,6 +14,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
         int startX;
         int startY;
+        char direction = 'U'; //U D L R
+        int velocityX = 0;
+        int velocityY = 0;
 
         Block(Image image, int x, int y, int width, int height){
             this.image = image;
@@ -23,6 +26,34 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             this.height = height;
             this.startX = x;
             this.startY = y;
+        }
+
+        //direction update method
+        void updateDirection(char direction){
+            this.direction = direction;
+            updateVelocity();
+        }
+
+        //velocity update method
+        void updateVelocity(){
+
+            //velocity to move in directions up, down, left, right
+            if(this.direction == 'U'){
+                this.velocityX = 0;
+                this.velocityY = -tileSize/4;
+            }
+            else if(this.direction == 'D'){
+                this.velocityX = 0;
+                this.velocityY = tileSize/4;
+            }
+            else if(this.direction == 'L'){
+                this.velocityX = -tileSize/4;
+                this.velocityY = 0;
+            }
+            else if(this.direction == 'R'){
+                this.velocityX = tileSize/4;
+                this.velocityY = 0;
+            }
         }
     }
 
@@ -79,6 +110,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     PacMan(){
         setPreferredSize(new Dimension(boardWidth, boardHeight)); //JPanel size
         setBackground(Color.BLACK); //JPanel colour
+        addKeyListener(this); //listen for key presses
+        setFocusable(true);// JPanel listens to key presses
 
         //instance variable initialization to allow images to appear in game
         wallImage = new ImageIcon(getClass().getResource("./wall.png")).getImage();
@@ -181,6 +214,20 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     //Triggers if key is pressed and then let go (method used for arrow key functionality)
     @Override
     public void keyReleased(KeyEvent e){
-        
+        //System.out.println("KeyEvent: " + e.getKeyCode());
+
+        //updates velocity of pacman
+        if (e.getKeyCode() == KeyEvent.VK_UP){
+            pacman.updateDirection('U');
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_DOWN){
+            pacman.updateDirection('D');
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_LEFT){
+            pacman.updateDirection('L');
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_RIGHT){
+            pacman.updateDirection('R');
+        }
     }
 }
