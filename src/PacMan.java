@@ -294,7 +294,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         pacman.reset();
         pacman.velocityX = 0;
         pacman.velocityY = 0;
-        for()
+        for(Block ghost : ghosts){
+            ghost.reset();
+            char newDirection = directions[random.nextInt(4)];
+            ghost.updateDirection(newDirection);
+        }
     }
 
     //Triggers the paintComponent to paint the screen again so the screen can display game movement
