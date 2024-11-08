@@ -129,6 +129,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     Random random = new Random();
     int score = 0;
     int lives = 3;
+    int level = 1;
     boolean gameOver = false;
 
     PacMan(){
@@ -234,7 +235,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             g.drawString("Game Over: " + String.valueOf(score), tileSize/2,tileSize/2);
         }
         else{
-            g.drawString("Lives: x" + String.valueOf(lives) + "    Score: " + String.valueOf(score), tileSize/2,tileSize/2);
+            g.drawString("Lives: x" + String.valueOf(lives) +"    Level: " + String.valueOf(level) + "   Score: " + String.valueOf(score), tileSize/2,tileSize/2);
         }
     }
 
@@ -257,6 +258,10 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         for(Block ghost : ghosts){
             if (collision(ghost,pacman)){
                 lives -= 1;
+                if(lives == 0){
+                    gameOver = true;
+                    return;
+                }
                 resetPositions();
             }
             ghost.x += ghost.velocityX;
@@ -280,6 +285,13 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             }
         }
         foods.remove(foodEaten);
+
+        //if hashset is empty then all food has been eaten, level complete, progress to next level
+        if (foods.isEmpty()){
+            loadMap();
+            resetPositions();
+            level++;
+        }
     }
 
 
@@ -306,6 +318,9 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     public void actionPerformed(ActionEvent e){
         move(); //updates positions of all objects in the game
         repaint(); //update frame
+        if (gameOver){
+            gameLoop.stop();
+        }
     }
 
     @Override
@@ -317,7 +332,17 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     //Triggers if key is pressed and then let go (method used for arrow key functionality)
     @Override
     public void keyReleased(KeyEvent e){
-        System.out.println("KeyEvent: " + e.getKeyCode());
+
+        //press any key to restart game
+        if(gameOver){
+            loadMap(); //to add all food back into hashset
+            resetPositions();
+            lives = 3;
+            level = 1;
+            score = 0;
+            gameOver = false;
+            gameLoop.start();
+        }
 
         //updates velocity of pacman
         if (e.getKeyCode() == KeyEvent.VK_UP){
