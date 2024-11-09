@@ -7,6 +7,10 @@ import javax.swing.*;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class PacMan extends JPanel implements ActionListener, KeyListener{
     class Block{
@@ -97,6 +101,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             }
         }
 
+        //plays sound
         public void play() {
             if (clip != null) {
                 clip.setFramePosition(0); //Rewinds audio if already been played
@@ -104,12 +109,19 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             }
         }
 
+        //to check if a certain sound is currently playing
+        public boolean isPlaying(){
+            return clip.isRunning();
+        }
+
+        //stop sound
         public void stop() {
             if (clip != null && clip.isRunning()) {
                 clip.stop();
             }
         }
 
+        //loop sound
         public void loop() {
             if (clip != null) {
                 clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -181,6 +193,12 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     Block pacman;
 
     Timer gameLoop;
+    ScheduledExecutorService scheduler;
+    Sound ghostSound;
+    Sound startSong;
+    Sound eatingSound;
+    Sound gameEndSound;
+
     char[] directions = {'U', 'D', 'L', 'R'}; //up, down, left, right for ghosts
     Random random = new Random();
     int score = 0;
@@ -216,13 +234,24 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
         //calls actionPerformed to trigger repaint loop every 50ms for game frames
         gameLoop = new Timer(50, this); //20fps (1000ms/50ms)
-        gameLoop.start();
+        scheduler = Executors.newSingleThreadScheduledExecutor();
 
-        Sound startSong = new Sound("/pacman_beginning.wav");
+        //Freeze game at start for beginning jingle to play
+        scheduler.schedule(()-> {
+                    gameLoop.start();
+        }, 4000, TimeUnit.MILLISECONDS);
+
+        //Play intro song
+        startSong = new Sound("/Intro.wav");
         startSong.play();
 
-        Sound backgroundSound = new Sound("/pacman_chomp.wav");
-        backgroundSound.delayedLoop(4000);
+        //ghost movement sound
+        ghostSound = new Sound("/ghost_sound_new.wav");
+        ghostSound.delayedLoop(4000);
+
+        eatingSound = new Sound("/Eating4.wav");
+
+        gameEndSound = new Sound("/game_end.wav");
     }
 
     public void loadMap(){
@@ -340,12 +369,17 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
 
         //check food collision
         Block foodEaten = null;
+        boolean foodEatenThisCycle = false;
         for(Block food : foods){
-            if(collision(pacman,food)){
+            if(collision(pacman,food)){ //trigger eating sound if not already playing
+                if(!eatingSound.isPlaying()){
+                    eatingSound.play();
+                }
                 foodEaten = food;
                 score += 10;
             }
         }
+
         foods.remove(foodEaten);
 
         //if hashset is empty then all food has been eaten, level complete, progress to next level
@@ -381,6 +415,11 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         move(); //updates positions of all objects in the game
         repaint(); //update frame
         if (gameOver){
+            gameEndSound.play();
+            ghostSound.stop();
+            if(eatingSound.isPlaying()){
+                eatingSound.stop();
+            }
             gameLoop.stop();
         }
     }
