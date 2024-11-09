@@ -3,7 +3,7 @@
 <br/>
 <p>Do note that the arrowkeys do depend on timing a littlebit, as they are coded with the keyReleased() method, so you might have to click multiple times when Pac-Man is at certain openings in the wall to have him go through (I find spamming the arrow when close to the opening works best) (this happens in one block openings in corridors, corners and changing to the opposite direction don't have this happen) <strong>just note that this is intentional to make the game more challenging and intense</strong></p>
 <br/>
-<a href = "https://imgur.com/a/ezLMNEE" target="_blank">Image of the game being played</a>
+<a href = "https://imgur.com/a/ezLMNEE">Image of the game being played</a>
 <br/>
 <br/>
 <h1>How It's Made:</h1>
