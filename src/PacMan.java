@@ -254,6 +254,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         gameEndSound = new Sound("/game_end.wav");
     }
 
+    //load in map and characters
     public void loadMap(){
         walls = new HashSet<Block>();
         foods = new HashSet<Block>();
@@ -304,6 +305,8 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         draw(g);
     }
 
+
+    //draw graphics onto screen
     public void draw(Graphics g){
         g.drawImage(pacman.image,pacman.x, pacman.y, pacman.width, pacman.height,null);
 
@@ -321,11 +324,47 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         }
 
         //score update
-        g.setFont(new Font("Arial", Font.PLAIN,18));
         if(gameOver){
-            g.drawString("Game Over: " + String.valueOf(score), tileSize/2,tileSize/2);
+            g.setFont(new Font("Arial", Font.BOLD,24));
+
+            //white outline
+            int boxWidthWhite = 310;
+            int boxHeightWhite = 130;
+            int boxXWhite = (boardWidth - boxWidthWhite)/2;
+            int boxYWhite = (boardHeight - boxHeightWhite)/2;
+            g.setColor(Color.WHITE);
+            g.fillRect(boxXWhite,boxYWhite,boxWidthWhite,boxHeightWhite);
+
+
+            //main black box popup
+            int boxWidthBlack = 300;
+            int boxHeightBlack = 120;
+            int boxXBlack = (boardWidth - boxWidthBlack)/2;
+            int boxYBlack = (boardHeight - boxHeightBlack)/2;
+            g.setColor(Color.BLACK);
+            g.fillRect(boxXBlack,boxYBlack,boxWidthBlack,boxHeightBlack);
+
+            //game over messages
+            g.setColor(Color.RED);
+            String message = "Game Over!";
+            String finalScore = "Score: "+score;
+            String keyPress = "Press any key to start...";
+            FontMetrics fm = g.getFontMetrics();
+            int msgX = boxXBlack + (boxWidthBlack - fm.stringWidth(message))/2;
+            int msgY = boxYBlack + (boxHeightBlack/4);
+            int msg2Y = msgY + fm.getHeight();
+            int msg2X = boxXBlack + 14;
+            int msg3Y = msg2Y + fm.getHeight()+10;
+
+            g.drawString(message,msgX,msgY);
+            g.drawString(finalScore,msgX,msg2Y);
+
+            g.setColor(Color.WHITE);
+            g.drawString(keyPress,msg2X,msg3Y);
+
         }
         else{
+            g.setFont(new Font("Arial", Font.BOLD,18));
             g.drawString("Lives: x" + String.valueOf(lives) +"    Level: " + String.valueOf(level) + "   Score: " + String.valueOf(score), tileSize/2,tileSize/2);
         }
     }
@@ -379,7 +418,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
                 score += 10;
             }
         }
-
         foods.remove(foodEaten);
 
         //if hashset is empty then all food has been eaten, level complete, progress to next level
@@ -389,7 +427,6 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             level++;
         }
     }
-
 
 
     //detects object collision in game
@@ -434,7 +471,7 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
     @Override
     public void keyReleased(KeyEvent e){
 
-        //press any key to restart game
+        //once a key is released, this will trigger, so basically press any key to restart game
         if(gameOver){
             loadMap(); //to add all food back into hashset
             resetPositions();
@@ -442,7 +479,14 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
             level = 1;
             score = 0;
             gameOver = false;
-            gameLoop.start();
+
+            //Delay game restart for game over music to play and to catch player's attention
+            scheduler.schedule(()-> {
+                gameLoop.start();
+            }, 1000, TimeUnit.MILLISECONDS);
+
+            ghostSound.delayedLoop(1700);
+
         }
 
         //updates velocity of pacman
