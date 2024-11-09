@@ -18,7 +18,7 @@ public class App {
         PacMan pacmanGame = new PacMan();
         frame.add(pacmanGame); //add panel to window
         frame.pack(); //full size of JPanel in window
-        pacmanGame.requestFocus(); //JPanel key listener
+        pacmanGame.requestFocus(); //
         frame.setVisible(true);
     }
 }

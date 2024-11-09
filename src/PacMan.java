@@ -1,8 +1,12 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.io.InputStream;
 import java.util.HashSet;
 import java.util.Random;
 import javax.swing.*;
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
 
 public class PacMan extends JPanel implements ActionListener, KeyListener{
     class Block{
@@ -73,6 +77,58 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         void reset(){
             this.x = this.startX;
             this.y = this.startY;
+        }
+    }
+
+    class Sound {
+        private Clip clip;
+
+        public Sound(String filePath) {
+            try {
+                InputStream audioSrc = getClass().getResourceAsStream(filePath);
+                if(audioSrc == null){
+                    throw new IOException("Sound file not found: " + filePath);
+                }
+                AudioInputStream audioStream = AudioSystem.getAudioInputStream(audioSrc);
+                clip = AudioSystem.getClip();
+                clip.open(audioStream);
+            } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void play() {
+            if (clip != null) {
+                clip.setFramePosition(0); //Rewinds audio if already been played
+                clip.start();
+            }
+        }
+
+        public void stop() {
+            if (clip != null && clip.isRunning()) {
+                clip.stop();
+            }
+        }
+
+        public void loop() {
+            if (clip != null) {
+                clip.loop(Clip.LOOP_CONTINUOUSLY);
+            }
+        }
+
+        //sound loop with delayed start
+        public void delayedLoop(int delayMillis) {
+            if (clip != null) {
+                new Thread(() -> {
+                    try {
+                        Thread.sleep(delayMillis);
+                        clip.setFramePosition(0);
+                        clip.loop(Clip.LOOP_CONTINUOUSLY);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }).start();
+            }
         }
     }
 
@@ -161,6 +217,12 @@ public class PacMan extends JPanel implements ActionListener, KeyListener{
         //calls actionPerformed to trigger repaint loop every 50ms for game frames
         gameLoop = new Timer(50, this); //20fps (1000ms/50ms)
         gameLoop.start();
+
+        Sound startSong = new Sound("/pacman_beginning.wav");
+        startSong.play();
+
+        Sound backgroundSound = new Sound("/pacman_chomp.wav");
+        backgroundSound.delayedLoop(4000);
     }
 
     public void loadMap(){
